@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extra Food - UI Refresh & Synchronization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap');
+        
+        :root {
+            --teal-primary: #005E6A;      /* Biru Toska Utama */
+            --teal-light: #7acfd6;        /* Biru Toska Muda */
+            --amber-accent: #F15A23;      /* Kuning/Oranye Accent */
+            --barely-gray: #e6eff1;       /* Background kebiruan pucat */
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --input-bg: #f1f5f9;
+        }
+
+        [data-theme='dark'] {
+            --barely-gray: #0a2d33; 
+            --card-bg: #11424a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #1b5d66;
+            --input-bg: #0a2d33;
+            --teal-primary: #25c1d1;
+        }
+
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: var(--barely-gray); 
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .bg-white { background-color: var(--card-bg) !important; transition: background-color 0.3s ease; }
+        .text-slate-900 { color: var(--text-main) !important; }
+        .text-slate-700 { color: var(--text-main) !important; }
+        .text-slate-600 { color: var(--text-main) !important; }
+        .text-slate-400 { color: var(--text-muted) !important; }
+        .border-slate-200, .border-slate-100 { border-color: var(--border-color) !important; }
+        .bg-slate-50, .bg-slate-100 { background-color: var(--input-bg) !important; }
+
+        .progress-container {
+            height: 12px;
+            background: var(--border-color);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.6s ease;
+            border-radius: 99px;
+        }
+        
+        .item-input-box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 10px;
+            width: 100%;
+            font-size: 11px;
+            font-weight: 600;
+            outline: none;
+            color: var(--text-main);
+        }
+
+        @media print {
+            .no-print, #app, #addEmployeeModal, #historyModal, .toast { display: none !important; }
+            #printArea { 
+                display: block !important; 
+                width: 100% !important; 
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                margin: 0 !important;
+                padding: 15px !important;
+                background: white !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body { 
+                background: white !important; 
+                color: black !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+            }
+            table { width: 100% !important; border-collapse: collapse !important; }
+            th, td { border: 1px solid #cbd5e1 !important; }
+        }
+        #printArea { display: none; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: var(--barely-gray); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--teal-primary); border-radius: 10px; }
+
+        #digitalClock { font-variant-numeric: tabular-nums; }
+
+        .theme-toggle {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: var(--amber-accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .profile-img {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            object-fit: cover;
+            background-color: var(--teal-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .keterangan-input {
+            background-color: var(--input-bg);
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .keterangan-input:focus {
+            border-style: solid;
+            border-color: var(--teal-primary);
+            box-shadow: 0 0 0 2px rgba(0, 94, 106, 0.15);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: #005E6A;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div id="app" class="max-w-[1400px] mx-auto no-print">
+        <!-- HEADER -->
+        <header class="mb-8 flex flex-col lg:flex-row justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 card-shadow gap-4">
+            <div class="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-start">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg" style="background-color: var(--teal-primary);">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H2m9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-width="2.5"></path></svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black tracking-tight text-slate-900 uppercase">Extra<span style="color: var(--teal-primary);">Food</span></h1>
+                        <p class="text-[9px] text-slate-400 font-extrabold uppercase tracking-[0.2em]">COC CASH BNI KCU BANDUNG</p>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex flex-col border-l-2 border-slate-100 pl-6">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">LIVE CLOCK</span>
+                    <div id="digitalClock" class="text-xl font-extrabold tracking-tighter" style="color: var(--teal-primary);">00.00.00</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end items-center">
+                <button onclick="toggleTheme()" class="theme-toggle shadow-md">
+                    <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728L12 12m0 0l-4-4m4 4l4-4m-4 4l-4 4m4-4l4 4" stroke-width="2" stroke-linecap="round"></path><circle cx="12" cy="12" r="5" stroke-width="2"></circle></svg>
+                    <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </button>
+
+                <button onclick="openAddEmployeeModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-md">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="3" stroke-linecap="round"></path></svg>
+                    Tambah Pegawai
+                </button>
+
+                <button onclick="document.getElementById('fileInput').click()" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-200 transition-all border border-slate-200">Muat Backup</button>
+                <input type="file" id="fileInput" class="hidden" accept=".json" onchange="importData(event)">
+                
+                <button onclick="exportData()" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-[10px] uppercase hover:opacity-90 transition-all">Simpan Backup</button>
+                
+                <button onclick="printRekap()" class="text-white px-5 py-2.5 rounded-xl font-black text-[11px] uppercase flex items-center gap-2 hover:opacity-90 transition-all shadow-lg" style="background-color: var(--teal-primary);">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-width="2.5"></path></svg>
+                    Cetak Laporan
+                </button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD ATAS -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <div class="lg:col-span-3 bg-white p-6 rounded-[2rem] border border-slate-200 flex flex-col md:flex-row gap-6 card-shadow items-end">
+                <div class="flex-1 w-full">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-wider">Periode Aktif</label>
+                    <input type="text" id="periodInput" value="PERIODE 01 - 05 SEPTEMBER 2025" onchange="updateMeta('period', this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold text-sm uppercase w-full outline-none focus:ring-2 focus:ring-[#1ba0ad]">
+                </div>
+                <div class="flex-1 w-full">
+                    <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-wider">Bulan Berjalan</label>
+                    <input type="text" id="monthInput" value="SEPTEMBER 2025" onchange="updateMeta('month', this.value)" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 font-bold text-sm uppercase w-full outline-none focus:ring-2 focus:ring-[#1ba0ad]">
+                </div>
+                <div class="flex flex-wrap md:flex-nowrap gap-2 w-full md:w-auto">
+                    <button onclick="startNewPeriod()" title="Mulai Periode Baru dengan Input Kosong" class="flex-1 md:flex-initial px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] uppercase flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2.5" stroke-linecap="round"></path></svg>
+                        + Periode Baru
+                    </button>
+                    <button onclick="saveCurrentToHistory()" title="Simpan / Timpa Snapshot Periode Saat Ini" class="flex-1 md:flex-initial px-4 py-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-black text-[10px] uppercase flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        Simpan Periode
+                    </button>
+                    <button onclick="openHistoryModal()" class="flex-1 md:flex-initial px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 font-black text-[10px] uppercase flex items-center justify-center gap-1.5 transition-all whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        History (<span id="historyBadge">0</span>)
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 rounded-[2rem] flex flex-col justify-center items-center text-white relative overflow-hidden shadow-xl" style="background-color: var(--teal-primary);">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl"></div>
+                <p class="text-[10px] font-black opacity-80 uppercase tracking-[0.2em] mb-2">Total Seluruh Biaya</p>
+                <h2 id="grandTotalDisplay" class="text-3xl font-black tracking-tighter">Rp 0</h2>
+                <span id="totalEmployeeCount" class="text-[10px] opacity-75 font-semibold mt-1">0 PEGAWAI TERDAFTAR</span>
+            </div>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="mb-6 p-1.5 rounded-2xl flex items-center gap-4 shadow-inner" style="background-color: var(--amber-accent);">
+            <div class="bg-white/20 p-3 rounded-xl ml-2">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="3" stroke-linecap="round"></path></svg>
+            </div>
+            <input type="text" id="searchEmployee" oninput="renderEmployees()" placeholder="CARI NAMA ATAL KETERANGAN PEGAWAI..." class="w-full bg-transparent font-black text-xs uppercase tracking-widest outline-none text-white placeholder-white/70">
+            <div class="text-[9px] font-black text-white/80 uppercase px-4 whitespace-nowrap">Filter Database</div>
+        </div>
+
+        <!-- DAFTAR KARTU PEGAWAI -->
+        <div id="employeeList" class="space-y-8 mb-16">
+            <!-- Dynamic HTML renders here -->
+        </div>
+
+        <!-- MASTER DATA BARANG -->
+        <div class="mt-16 pt-10 border-t-2 border-slate-200 border-dashed">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 card-shadow lg:col-span-2">
+                    <div class="flex justify-between items-center mb-5">
+                        <div>
+                            <h3 class="font-black text-xs uppercase text-slate-800 tracking-wider">Daftar Master Menu / Barang</h3>
+                            <p class="text-[10px] text-slate-400 font-semibold">Menu yang terdaftar di sini otomatis digunakan saat tambah item pegawai</p>
+                        </div>
+                        <button onclick="addMasterItemPrompt()" class="px-4 py-2 rounded-xl text-[10px] font-black hover:opacity-90 text-white transition-all shadow-md" style="background-color: var(--teal-primary);">+ TAMBAH MENU</button>
+                    </div>
+                    <div class="mb-4">
+                        <input type="text" id="searchMasterItem" oninput="renderMasterItems()" placeholder="Cari menu di master barang..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-bold uppercase outline-none focus:ring-1 focus:ring-[#1ba0ad]">
+                    </div>
+                    <div class="max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="text-[9px] font-black uppercase text-slate-400 border-b border-slate-100 pb-2">
+                                    <th class="py-2">Nama Menu</th>
+                                    <th class="py-2 text-right">Harga (Rp)</th>
+                                    <th class="py-2 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="masterItemTable">
+                                <!-- Dynamic master items render here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-[2.5rem] border border-slate-200 card-shadow flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-black text-xs uppercase text-slate-800 tracking-wider mb-2">Informasi & Reset Data</h3>
+                        <p class="text-[11px] text-slate-500 leading-relaxed mb-4">
+                            Semua perubahan data (penambahan pegawai, menu harian, keterangan, & master harga) langsung tersimpan di browser Anda.
+                        </p>
+                        <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 mb-4">
+                            <p class="text-[10px] text-amber-800 font-bold uppercase">💡 Sinkronisasi Backup File Lama:</p>
+                            <p class="text-[10px] text-amber-700 font-medium mt-1">Tombol "Muat Backup" sekarang dapat mengenali file backup JSON lama dengan format beragam secara otomatis.</p>
+                        </div>
+                    </div>
+                    <button onclick="resetAllData()" class="w-full py-3 rounded-2xl border-2 border-red-200 text-red-600 hover:bg-red-50 font-black text-[10px] uppercase tracking-wider transition-all">
+                        Reset Ke Data Default
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH PEGAWAI -->
+    <div id="addEmployeeModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">Tambah Pegawai Baru</h3>
+                <button onclick="closeAddEmployeeModal()" class="text-slate-400 hover:text-slate-600 font-black text-xl">✕</button>
+            </div>
+            <form onsubmit="handleAddEmployee(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Nama Pegawai</label>
+                    <input type="text" id="newEmpName" required placeholder="NAMA LENGKAP" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-600">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Keterangan / Posisi</label>
+                    <input type="text" id="newEmpKet" placeholder="CATATAN / POSISI..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-600">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Limit Budget (Rp)</label>
+                    <input type="number" id="newEmpBudget" value="80000" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-teal-600">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeAddEmployeeModal()" class="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs uppercase">Batal</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl text-white font-black text-xs uppercase shadow-md" style="background-color: var(--teal-primary);">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORY PERIODE -->
+    <div id="historyModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 no-print">
+        <div class="bg-white rounded-[2rem] p-6 md:p-8 max-w-2xl w-full shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-100">
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight">Riwayat Periode Tersimpan</h3>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Daftar arsip periode yang pernah disimpan</p>
+                </div>
+                <button onclick="closeHistoryModal()" class="text-slate-400 hover:text-slate-600 font-black text-xl">✕</button>
+            </div>
+            
+            <div id="historyListContainer" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2 my-2">
+                <!-- History list renders here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER KHUSUS CETAK/PRINT -->
+    <div id="printArea"></div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">Notifikasi</div>
+
+    <script>
+        // --- INITIAL DEFAULT DATA STRUCTURE ---
+        const DEFAULT_STATE = {
+            period: "PERIODE 01 - 05 SEPTEMBER 2025",
+            month: "SEPTEMBER 2025",
+            history: [],
+            masterItems: [
+                { name: "LEMONIA", price: 10000 },
+                { name: "KOPI GAJAH SACHET", price: 2000 },
+                { name: "NUTRIBOST 500 ML", price: 6500 },
+                { name: "KACANG GUMIWANG", price: 2000 },
+                { name: "NEOZEP", price: 3000 },
+                { name: "KRIPIK KUSUKA", price: 6500 },
+                { name: "ROMA MALKIST MERAH", price: 8000 },
+                { name: "BENGBENG", price: 2500 },
+                { name: "ULTRA MILK 250 ML", price: 7000 },
+                { name: "ADISA SNACK", price: 20000 },
+                { name: "MAKBANG", price: 5000 },
+                { name: "LE MINERALE 600 ML", price: 3000 }
+            ],
+            employees: [
+                {
+                    id: "emp_default_1",
+                    name: "DADAN TARYANTO",
+                    keterangan: "...............................................",
+                    budgetLimit: 80000,
+                    days: {
+                        SENIN: [
+                            { id: "i1", name: "LEMONIA", qty: 1, price: 10000 },
+                            { id: "i2", name: "KOPI GAJAH SACHET", qty: 2, price: 2000 },
+                            { id: "i3", name: "NUTRIBOST 500 ML", qty: 1, price: 6500 },
+                            { id: "i4", name: "KACANG GUMIWANG", qty: 1, price: 2000 }
+                        ],
+                        SELASA: [
+                            { id: "i5", name: "NUTRIBOST 500 ML", qty: 1, price: 6500 },
+                            { id: "i6", name: "KOPI GAJAH SACHET", qty: 3, price: 2000 }
+                        ],
+                        RABU: [
+                            { id: "i7", name: "NEOZEP", qty: 1, price: 3000 },
+                            { id: "i8", name: "NUTRIBOST 500 ML", qty: 1, price: 6500 }
+                        ],
+                        KAMIS: [
+                            { id: "i9", name: "KRIPIK KUSUKA", qty: 1, price: 6500 },
+                            { id: "i10", name: "ROMA MALKIST MERAH", qty: 1, price: 8000 }
+                        ],
+                        JUMAT: [
+                            { id: "i11", name: "NUTRIBOST 500 ML", qty: 1, price: 6500 },
+                            { id: "i12", name: "BENGBENG", qty: 1, price: 2500 }
+                        ]
+                    }
+                }
+            ]
+        };
+
+        const DAYS_LIST = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT"];
+        let appState = loadLocalStorageData();
+
+        // --- APP INITIALIZATION ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initClock();
+            renderApp();
+        });
+
+        function loadLocalStorageData() {
+            try {
+                const saved = localStorage.getItem('EXTRA_FOOD_STATE_V2');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    return normalizeStateData(parsed);
+                }
+            } catch (e) {
+                console.error("Gagal membaca dari localStorage", e);
+            }
+            return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('EXTRA_FOOD_STATE_V2', JSON.stringify(appState));
+            } catch (e) {
+                console.error("Gagal menyimpan ke localStorage", e);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+        }
+
+        // --- DIGITAL CLOCK ---
+        function initClock() {
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toTimeString().split(' ')[0].replace(/:/g, '.');
+                const clockEl = document.getElementById('digitalClock');
+                if (clockEl) clockEl.textContent = timeString;
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+        }
+
+        // --- THEME TOGGLE ---
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            if (newTheme === 'dark') {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderApp() {
+            document.getElementById('periodInput').value = appState.period || "";
+            document.getElementById('monthInput').value = appState.month || "";
+
+            renderEmployees();
+            renderMasterItems();
+            renderMasterDatalist();
+            updateGrandTotals();
+            updateHistoryBadge();
+            saveState();
+        }
+
+        function renderMasterDatalist() {
+            let datalist = document.getElementById('masterItemsDatalist');
+            if (!datalist) {
+                datalist = document.createElement('datalist');
+                datalist.id = 'masterItemsDatalist';
+                document.body.appendChild(datalist);
+            }
+            datalist.innerHTML = appState.masterItems.map(m => `<option value="${escapeHtml(m.name)}">`).join('');
+        }
+
+        function updateMeta(field, val) {
+            appState[field] = val;
+            saveState();
+        }
+
+        function updateGrandTotals() {
+            let total = 0;
+            appState.employees.forEach(emp => {
+                total += calculateEmployeeTotal(emp);
+            });
+            document.getElementById('grandTotalDisplay').textContent = formatRupiah(total);
+            document.getElementById('totalEmployeeCount').textContent = `${appState.employees.length} PEGAWAI TERDAFTAR`;
+        }
+
+        function calculateEmployeeTotal(emp) {
+            let sum = 0;
+            if (!emp.days) return 0;
+            DAYS_LIST.forEach(day => {
+                if (Array.isArray(emp.days[day])) {
+                    emp.days[day].forEach(item => {
+                        sum += (item.qty || 1) * (item.price || 0);
+                    });
+                }
+            });
+            return sum;
+        }
+
+        function renderEmployees() {
+            const container = document.getElementById('employeeList');
+            const searchKeyword = (document.getElementById('searchEmployee')?.value || "").toLowerCase().trim();
+
+            const filteredEmployees = appState.employees.filter(emp => {
+                const nameMatch = (emp.name || "").toLowerCase().includes(searchKeyword);
+                const ketMatch = (emp.keterangan || "").toLowerCase().includes(searchKeyword);
+                return nameMatch || ketMatch;
+            });
+
+            if (filteredEmployees.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-12 rounded-[2.5rem] border border-slate-200 text-center card-shadow">
+                        <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="2"></path></svg>
+                        <h4 class="text-base font-black text-slate-700 uppercase">Tidak Ada Data Pegawai</h4>
+                        <p class="text-xs text-slate-400 mt-1 mb-4">Belum ada pegawai atau hasil pencarian tidak ditemukan.</p>
+                        <button onclick="openAddEmployeeModal()" class="px-5 py-2.5 rounded-xl text-white font-black text-xs uppercase" style="background-color: var(--teal-primary);">+ Tambah Pegawai Pertama</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredEmployees.map(emp => {
+                const totalUsage = calculateEmployeeTotal(emp);
+                const limit = emp.budgetLimit || 80000;
+                const remaining = limit - totalUsage;
+                const percentage = Math.min(Math.round((totalUsage / limit) * 100), 100);
+                const barColor = totalUsage > limit ? '#ef4444' : (percentage >= 90 ? '#f59e0b' : '#005E6A');
+                const initial = emp.name ? emp.name.charAt(0).toUpperCase() : '?';
+
+                return `
+                <div class="rounded-[2.5rem] border border-slate-200 p-6 md:p-8 bg-white card-shadow relative">
+                    <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-6">
+                        <div class="flex-1 w-full">
+                            <div class="flex items-center justify-between md:justify-start gap-4">
+                                <h3 class="font-black text-xl md:text-2xl uppercase text-slate-900 tracking-tight flex items-center gap-3">
+                                    <span class="profile-img">${initial}</span>
+                                    <input type="text" value="${escapeHtml(emp.name)}" onchange="updateEmployeeName('${emp.id}', this.value)" class="bg-transparent font-black outline-none border-b border-transparent focus:border-teal-500 hover:border-slate-300 transition-all uppercase w-full">
+                                </h3>
+                                <button onclick="deleteEmployee('${emp.id}')" title="Hapus Pegawai" class="text-slate-300 hover:text-red-500 font-bold p-2 transition-all">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2"></path></svg>
+                                </button>
+                            </div>
+
+                            <!-- FITUR KETERANGAN PADA NAMA PEGAWAI -->
+                            <div class="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 max-w-xl">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider whitespace-nowrap">Keterangan:</label>
+                                <input type="text" value="${escapeHtml(emp.keterangan || '')}" placeholder="Isi keterangan di sini..." onchange="updateEmployeeKet('${emp.id}', this.value)" class="keterangan-input w-full uppercase" />
+                            </div>
+
+                            <div class="mt-3">
+                                <button onclick="printIndividualEmployee('${emp.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-1.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 border border-slate-200 transition-all shadow-sm no-print">
+                                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-width="2"></path></svg>
+                                    Rincian Pegawai
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="text-right flex flex-col items-end min-w-[280px] md:min-w-[320px] w-full md:w-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <div class="flex w-full mb-2">
+                                <div class="flex-1 text-left pr-3">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Penggunaan</p>
+                                    <h4 class="text-xl font-black text-slate-900 tracking-tight">${formatRupiah(totalUsage)}</h4>
+                                </div>
+                                <div class="flex-1 text-right pl-3 border-l border-slate-200">
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Sisa Limit</p>
+                                    <h4 class="text-xl font-black ${remaining < 0 ? 'text-red-500' : 'text-teal-600'} tracking-tight">${formatRupiah(remaining)}</h4>
+                                </div>
+                            </div>
+                            <div class="w-full mt-2">
+                                <div class="flex justify-between text-[9px] font-black uppercase mb-1.5">
+                                    <span class="text-slate-400">Budget Limit (<span onclick="editBudgetLimit('${emp.id}')" class="underline cursor-pointer hover:text-teal-600">${formatRupiah(limit)}</span>)</span>
+                                    <span style="color: ${barColor}">${percentage}%</span>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar-fill" style="width: ${percentage}%; background-color: ${barColor};"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HARI (SENIN - JUMAT) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        ${DAYS_LIST.map(day => renderDayColumn(emp, day)).join('')}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderDayColumn(emp, day) {
+            const items = (emp.days && emp.days[day]) ? emp.days[day] : [];
+            
+            return `
+            <div class="p-3.5 rounded-3xl border border-slate-100 flex flex-col justify-between" style="background-color: var(--barely-gray);">
+                <div>
+                    <span class="text-[10px] font-black text-slate-400 block mb-3 uppercase text-center tracking-widest">${day}</span>
+                    <div class="space-y-2.5">
+                        ${items.map(item => `
+                            <div class="bg-white p-2.5 rounded-2xl border border-slate-200 card-shadow">
+                                <input type="text" list="masterItemsDatalist" value="${escapeHtml(item.name)}" onchange="updateItemName('${emp.id}', '${day}', '${item.id}', this.value)" class="item-input-box mb-1.5 uppercase" placeholder="MENU...">
+                                <div class="flex items-center justify-between gap-1">
+                                    <input type="number" min="1" value="${item.qty || 1}" onchange="updateItemQty('${emp.id}', '${day}', '${item.id}', this.value)" class="w-10 bg-slate-50 text-xs font-black outline-none text-center rounded py-1 border border-slate-200">
+                                    <div class="text-right flex-1">
+                                        <p class="text-[9px] font-black text-slate-900">${formatRupiah((item.qty || 1) * (item.price || 0))}</p>
+                                    </div>
+                                    <button onclick="deleteItem('${emp.id}', '${day}', '${item.id}')" class="text-slate-300 hover:text-red-500 font-black ml-1 text-sm">×</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <button onclick="addItem('${emp.id}', '${day}')" class="w-full mt-3 py-2.5 border-2 border-dashed border-slate-300 rounded-2xl text-slate-400 font-black text-[9px] hover:bg-white hover:text-slate-600 transition-all uppercase">+ MENU</button>
+            </div>
+            `;
+        }
+
+        function renderMasterItems() {
+            const tbody = document.getElementById('masterItemTable');
+            const searchKeyword = (document.getElementById('searchMasterItem')?.value || "").toLowerCase().trim();
+
+            const filtered = appState.masterItems.filter(i => i.name.toLowerCase().includes(searchKeyword));
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-[10px] font-bold text-slate-400">Tidak ada menu master.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map((item, index) => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td class="py-2.5 pr-2 uppercase font-bold text-slate-700 text-[10px]">${escapeHtml(item.name)}</td>
+                    <td class="py-2.5 text-right">
+                        <input type="number" value="${item.price}" onchange="updateMasterPrice('${escapeHtml(item.name)}', this.value)" class="w-24 text-right bg-slate-50 rounded-lg px-2 py-1 outline-none font-mono text-[10px] font-bold border border-slate-200">
+                    </td>
+                    <td class="py-2.5 text-center w-10">
+                        <button onclick="deleteMasterItem('${escapeHtml(item.name)}')" class="text-slate-300 hover:text-red-500 font-bold text-sm">×</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // --- EMPLOYEE ACTIONS ---
+        function openAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.remove('hidden');
+            document.getElementById('newEmpName').focus();
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('addEmployeeModal').classList.add('hidden');
+        }
+
+        function handleAddEmployee(e) {
+            e.preventDefault();
+            const name = document.getElementById('newEmpName').value.trim();
+            const ket = document.getElementById('newEmpKet').value.trim() || "...............................................";
+            const budget = parseInt(document.getElementById('newEmpBudget').value) || 80000;
+
+            if (!name) return;
+
+            const newEmp = {
+                id: 'emp_' + Date.now(),
+                name: name.toUpperCase(),
+                keterangan: ket,
+                budgetLimit: budget,
+                days: { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] }
+            };
+
+            appState.employees.push(newEmp);
+            closeAddEmployeeModal();
+            document.getElementById('newEmpName').value = '';
+            document.getElementById('newEmpKet').value = '';
+            
+            renderApp();
+            showToast(`Pegawai ${name} berhasil ditambahkan!`);
+        }
+
+        function updateEmployeeName(empId, val) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp) {
+                emp.name = val.toUpperCase().trim();
+                renderApp();
+            }
+        }
+
+        function updateEmployeeKet(empId, val) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp) {
+                emp.keterangan = val;
+                saveState();
+            }
+        }
+
+        function updateItemQty(empId, day, itemId, val) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp && emp.days && emp.days[day]) {
+                const item = emp.days[day].find(i => i.id === itemId);
+                if (item) {
+                    item.qty = Math.max(1, parseInt(val) || 1);
+                    renderApp();
+                }
+            }
+        }
+
+        function deleteItem(empId, day, itemId) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp && emp.days && emp.days[day]) {
+                emp.days[day] = emp.days[day].filter(i => i.id !== itemId);
+                renderApp();
+                showToast("Menu berhasil dihapus");
+            }
+        }
+
+        function addMasterItemPrompt() {
+            const name = prompt("Masukkan nama menu/barang baru:");
+            if (!name || !name.trim()) return;
+            const cleanName = name.trim().toUpperCase();
+            const priceStr = prompt(`Masukkan harga (Rp) untuk ${cleanName}:`, "5000");
+            const price = parseInt(priceStr) || 0;
+
+            const existing = appState.masterItems.find(m => m.name === cleanName);
+            if (existing) {
+                existing.price = price;
+            } else {
+                appState.masterItems.push({ name: cleanName, price: price });
+            }
+            renderApp();
+            showToast(`Menu ${cleanName} berhasil ditambahkan!`);
+        }
+
+        function updateMasterPrice(name, val) {
+            const item = appState.masterItems.find(m => m.name === name);
+            if (item) {
+                item.price = parseInt(val) || 0;
+                
+                // Synchronize price with existing items assigned to employees
+                appState.employees.forEach(emp => {
+                    DAYS_LIST.forEach(day => {
+                        if (emp.days && emp.days[day]) {
+                            emp.days[day].forEach(i => {
+                                if (i.name.toUpperCase() === name.toUpperCase()) {
+                                    i.price = item.price;
+                                }
+                            });
+                        }
+                    });
+                });
+
+                renderApp();
+            }
+        }
+
+        function deleteMasterItem(name) {
+            if (confirm(`Hapus menu "${name}" dari Master Barang?`)) {
+                appState.masterItems = appState.masterItems.filter(m => m.name !== name);
+                renderApp();
+                showToast(`Menu ${name} dihapus dari master.`);
+            }
+        }
+
+        function editBudgetLimit(empId) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (!emp) return;
+            const newLimit = prompt("Masukkan Budget Limit baru (Rp):", emp.budgetLimit || 80000);
+            if (newLimit !== null && !isNaN(parseInt(newLimit))) {
+                emp.budgetLimit = parseInt(newLimit);
+                renderApp();
+                showToast("Budget limit diperbarui");
+            }
+        }
+
+        function deleteEmployee(empId) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp && confirm(`Apakah Anda yakin ingin menghapus pegawai ${emp.name}?`)) {
+                appState.employees = appState.employees.filter(e => e.id !== empId);
+                renderApp();
+                showToast("Pegawai berhasil dihapus");
+            }
+        }
+
+        // --- ITEM ACTIONS ---
+        function addItem(empId, day) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (!emp) return;
+
+            if (!emp.days) emp.days = {};
+            if (!emp.days[day]) emp.days[day] = [];
+
+            emp.days[day].push({
+                id: 'item_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                name: '',
+                qty: 1,
+                price: 0
+            });
+
+            renderApp();
+        }
+
+        function updateItemName(empId, day, itemId, val) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp && emp.days && emp.days[day]) {
+                const item = emp.days[day].find(i => i.id === itemId);
+                if (item) {
+                    item.name = val.toUpperCase().trim();
+                    // Sync harga dengan master items jika cocok
+                    const master = appState.masterItems.find(m => m.name.toUpperCase() === item.name);
+                    if (master) {
+                        item.price = master.price;
+                    }
+                    renderApp();
+                }
+            }
+        }
+        // --- HISTORY PERIODE MANAGEMENT ---
+        function startNewPeriod() {
+            const currentPeriod = appState.period || "PERIODE 01 - 05 SEPTEMBER 2025";
+            const newPeriodName = prompt("Masukkan Nama Periode Baru:", currentPeriod);
+            
+            if (!newPeriodName || !newPeriodName.trim()) return;
+
+            const confirmClear = confirm(`Buat periode baru: "${newPeriodName.trim().toUpperCase()}"?\n\nSemua inputan item makanan harian akan dikosongkan. (Daftar nama pegawai, keterangan, dan limit budget tetap tersimpan).`);
+
+            if (confirmClear) {
+                // Reset daily items for all employees
+                appState.employees.forEach(emp => {
+                    emp.days = { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] };
+                });
+                
+                appState.period = newPeriodName.trim().toUpperCase();
+                renderApp();
+                showToast(`Periode baru "${appState.period}" siap diisi (data kosong).`);
+            }
+        }
+
+        function saveCurrentToHistory() {
+            if (!appState.history) appState.history = [];
+
+            const currentPeriodTitle = (appState.period || "").trim().toUpperCase();
+            
+            // Cari apakah periode dengan nama yang sama sudah ada di history
+            const existingIndex = appState.history.findIndex(h => (h.period || "").trim().toUpperCase() === currentPeriodTitle);
+
+            const snapshot = {
+                id: existingIndex >= 0 ? appState.history[existingIndex].id : 'hist_' + Date.now(),
+                period: appState.period,
+                month: appState.month,
+                savedAt: new Date().toLocaleString('id-ID'),
+                totalEmployees: appState.employees.length,
+                grandTotal: appState.employees.reduce((acc, emp) => acc + calculateEmployeeTotal(emp), 0),
+                employees: JSON.parse(JSON.stringify(appState.employees))
+            };
+
+            if (existingIndex >= 0) {
+                // Timpa data periode yang sama
+                appState.history[existingIndex] = snapshot;
+                showToast(`Periode "${appState.period}" diperbarui/ditimpa!`);
+            } else {
+                // Tambah sebagai periode baru jika belum pernah disimpan
+                appState.history.unshift(snapshot);
+                showToast(`Periode "${appState.period}" berhasil disimpan ke History!`);
+            }
+
+            saveState();
+            updateHistoryBadge();
+        }
+
+        function openHistoryModal() {
+            renderHistoryList();
+            document.getElementById('historyModal').classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.add('hidden');
+        }
+
+        function updateHistoryBadge() {
+            const badge = document.getElementById('historyBadge');
+            if (badge) {
+                badge.textContent = appState.history ? appState.history.length : 0;
+            }
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyListContainer');
+            if (!container) return;
+
+            if (!appState.history || appState.history.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-slate-400">
+                        <p class="text-xs font-bold uppercase">Belum ada history periode tersimpan.</p>
+                        <p class="text-[10px] mt-1">Klik tombol "Simpan Periode" untuk memuat arsip snapshot.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = appState.history.map(item => `
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-teal-500 transition-all">
+                    <div>
+                        <span class="text-[9px] font-black text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-200 uppercase">${item.month || 'PERIODE'}</span>
+                        <h4 class="font-black text-sm text-slate-900 uppercase mt-1">${escapeHtml(item.period)}</h4>
+                        <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Disimpan: ${item.savedAt} • ${item.totalEmployees} Pegawai • Total: ${formatRupiah(item.grandTotal)}</p>
+                    </div>
+                    <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                        <button onclick="loadPeriodFromHistory('${item.id}')" class="px-3 py-2 rounded-xl text-white font-black text-[10px] uppercase transition-all shadow-sm" style="background-color: var(--teal-primary);">
+                            Muat Periode Ini
+                        </button>
+                        <button onclick="deleteHistoryItem('${item.id}')" class="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all" title="Hapus Dari History">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadPeriodFromHistory(histId) {
+            const item = appState.history.find(h => h.id === histId);
+            if (!item) return;
+
+            if (confirm(`Muat data dari history "${item.period}"? Data tampilan sekarang akan digantikan dengan data arsip ini.`)) {
+                appState.period = item.period;
+                appState.month = item.month;
+                appState.employees = JSON.parse(JSON.stringify(item.employees));
+                closeHistoryModal();
+                renderApp();
+                showToast(`Berhasil memuat periode: ${item.period}`);
+            }
+        }
+
+        function deleteHistoryItem(histId) {
+            if (confirm("Hapus catatan history ini dari arsip?")) {
+                appState.history = appState.history.filter(h => h.id !== histId);
+                saveState();
+                updateHistoryBadge();
+                renderHistoryList();
+                showToast("History dihapus");
+            }
+        }
+
+        // --- SMART IMPORT & SYNCHRONIZATION BACKUP FILE LAMA ---
+        function normalizeStateData(raw) {
+            const newState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+            if (!raw) return newState;
+
+            // Handle metadata & history
+            newState.period = raw.period || raw.periode || raw.periodeAktif || DEFAULT_STATE.period;
+            newState.month = raw.month || raw.bulan || raw.bulanBerjalan || DEFAULT_STATE.month;
+            newState.history = Array.isArray(raw.history) ? raw.history : [];
+
+            // Handle Master Items
+            if (Array.isArray(raw.masterItems)) {
+                newState.masterItems = raw.masterItems.map(m => ({
+                    name: (m.name || m.nama || "").toUpperCase(),
+                    price: parseInt(m.price || m.harga) || 0
+                })).filter(m => m.name);
+            } else if (Array.isArray(raw.items)) {
+                newState.masterItems = raw.items.map(m => ({
+                    name: (m.name || m.nama || "").toUpperCase(),
+                    price: parseInt(m.price || m.harga) || 0
+                })).filter(m => m.name);
+            }
+
+            // Helper lookup harga
+            const getPrice = (menuName) => {
+                const found = newState.masterItems.find(m => m.name === menuName.toUpperCase());
+                return found ? found.price : 0;
+            };
+
+            // Handle Employees (Dukung beragam struktur lama: `employees`, `pegawai`, `data`)
+            const rawEmployees = raw.employees || raw.pegawai || raw.data || [];
+            if (Array.isArray(rawEmployees) && rawEmployees.length > 0) {
+                newState.employees = rawEmployees.map((emp, index) => {
+                    const empName = (emp.name || emp.nama || emp.namaPegawai || `PEGAWAI ${index + 1}`).toUpperCase();
+                    const empKet = emp.keterangan || emp.ket || emp.note || emp.catatan || "...............................................";
+                    const empBudget = parseInt(emp.budgetLimit || emp.budget || emp.limit) || 80000;
+                    
+                    const normalizedDays = { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] };
+
+                    const rawDays = emp.days || emp.hari || emp.jadwal || {};
+
+                    DAYS_LIST.forEach(day => {
+                        // Cari kunci hari (kasus huruf besar/kecil)
+                        const key = Object.keys(rawDays).find(k => k.toUpperCase() === day);
+                        const dayItems = key ? rawDays[key] : [];
+
+                        if (Array.isArray(dayItems)) {
+                            normalizedDays[day] = dayItems.map((item, itemIdx) => {
+                                const itemName = (typeof item === 'string' ? item : (item.name || item.nama || item.menu || '')).toUpperCase();
+                                const qty = parseInt(item.qty || item.jumlah) || 1;
+                                let price = parseInt(item.price || item.harga);
+                                if (isNaN(price)) price = getPrice(itemName);
+
+                                return {
+                                    id: item.id || `i_${Date.now()}_${itemIdx}`,
+                                    name: itemName,
+                                    qty: qty,
+                                    price: price
+                                };
+                            }).filter(i => i.name);
+                        }
+                    });
+
+                    return {
+                        id: emp.id || `emp_${Date.now()}_${index}`,
+                        name: empName,
+                        keterangan: empKet,
+                        budgetLimit: empBudget,
+                        days: normalizedDays
+                    };
+                });
+            }
+
+            return newState;
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `extra_food_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Backup data telah diunduh");
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const rawData = JSON.parse(e.target.result);
+                    appState = normalizeStateData(rawData);
+                    renderApp();
+                    showToast("Berhasil memuat data backup!");
+                } catch (err) {
+                    console.error("Gagal membaca file JSON", err);
+                    showToast("File JSON tidak valid atau rusak!");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function resetAllData() {
+            if (confirm("Apakah Anda yakin ingin mengembalikan data ke kondisi awal default? Semua data yang belum dibackup akan terhapus.")) {
+                appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                renderApp();
+                showToast("Data dikembalikan ke default");
+            }
+        }
+
+        function printRekap() {
+            const printContainer = document.getElementById('printArea');
+            if (!printContainer) return;
+
+            let totalAll = 0;
+
+            const rowsHtml = appState.employees.map((emp, index) => {
+                const totalEmp = calculateEmployeeTotal(emp);
+                totalAll += totalEmp;
+
+                return `
+                    <tr>
+                        <td style="border:1px solid #333; padding:6px 10px; text-align:center; font-size:11px;">${index + 1}</td>
+                        <td style="border:1px solid #333; padding:6px 12px; font-size:11px; text-transform:uppercase;">${escapeHtml(emp.name)}</td>
+                        <td style="border:1px solid #333; padding:6px 12px; text-align:right; font-size:11px;">${formatRupiah(totalEmp)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // --- AKUMULASI / KALKULASI BARANG KELUAR (LAMPIRAN 2) ---
+            const itemMap = {};
+            let totalQtyAll = 0;
+            let totalItemNominalAll = 0;
+
+            appState.employees.forEach(emp => {
+                if (!emp.days) return;
+                DAYS_LIST.forEach(day => {
+                    if (Array.isArray(emp.days[day])) {
+                        emp.days[day].forEach(item => {
+                            const itemName = (item.name || '').trim().toUpperCase();
+                            if (!itemName) return;
+                            const qty = parseInt(item.qty) || 1;
+                            const price = parseInt(item.price) || 0;
+
+                            if (!itemMap[itemName]) {
+                                itemMap[itemName] = {
+                                    name: itemName,
+                                    totalQty: 0,
+                                    price: price
+                                };
+                            }
+                            itemMap[itemName].totalQty += qty;
+                            if (price > 0) itemMap[itemName].price = price;
+                        });
+                    }
+                });
+            });
+
+            const aggregatedItems = Object.values(itemMap);
+            aggregatedItems.sort((a, b) => a.name.localeCompare(b.name));
+
+            const itemRowsHtml = aggregatedItems.map((item, idx) => {
+                const itemTotal = item.totalQty * item.price;
+                totalQtyAll += item.totalQty;
+                totalItemNominalAll += itemTotal;
+
+                return `
+                    <tr>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:center; font-size:10px;">${idx + 1}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; font-size:10px; text-transform:uppercase;">${escapeHtml(item.name)}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:center; font-size:10px;">${item.totalQty}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:right; font-size:10px;">${(item.price || 0).toLocaleString('id-ID')}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:right; font-size:10px;">${(itemTotal || 0).toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const itemSummarySection = aggregatedItems.length > 0 ? `
+                <div style="margin-top: 35px; page-break-before: auto;">
+                    <div style="text-align: center; margin-bottom: 12px; line-height: 1.4;">
+                        <h3 style="font-size: 12px; font-weight: bold; margin: 0; text-transform: uppercase;">REKAPITULASI QTY EX FOOD COC CASH</h3>
+                        <div style="font-size: 11px; font-weight: bold; text-transform: uppercase;">${escapeHtml(appState.period || '')}</div>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; background: white;">
+                        <thead>
+                            <tr style="font-size: 10px; text-transform: uppercase; font-weight: bold;">
+                                <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 35px;">NO</th>
+                                <th style="border: 1px solid #333; padding: 6px; text-align: center;">NAMA BARANG (SESUAI INPUT)</th>
+                                <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 80px;">TOTAL QTY</th>
+                                <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 100px;">HARGA (RP)</th>
+                                <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 110px;">TOTAL (RP)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemRowsHtml}
+                            <tr style="font-size: 10px; font-weight: bold;">
+                                <td colspan="2" style="border: 1px solid #333; padding: 6px; text-align: right; text-transform: uppercase;">GRAND TOTAL PER INPUT:</td>
+                                <td style="border: 1px solid #333; padding: 6px; text-align: center;">${totalQtyAll}</td>
+                                <td style="border: 1px solid #333; padding: 6px;"></td>
+                                <td style="border: 1px solid #333; padding: 6px; text-align: right;">${formatRupiah(totalItemNominalAll)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="font-size: 9px; color: #555; margin-top: 10px; text-align: right;">
+                        Dicetak pada: ${new Date().toLocaleString('id-ID')}
+                    </div>
+                </div>
+            ` : '';
+
+            printContainer.innerHTML = `
+                <div style="font-family: Arial, Helvetica, sans-serif; color: #111; max-width: 700px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 20px; line-height: 1.5;">
+                        <h2 style="font-size: 13px; font-weight: bold; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">REKAP EXTRA FOOD</h2>
+                        <h3 style="font-size: 12px; font-weight: bold; margin: 0; text-transform: uppercase;">${escapeHtml(appState.period || '')} ${appState.month ? '- ' + escapeHtml(appState.month) : ''}</h3>
+                    </div>
+
+                    <table style="width: 100%; border-collapse: collapse; background: white;">
+                        <thead>
+                            <tr style="font-size: 11px; text-transform: uppercase; font-weight: bold;">
+                                <th style="border: 1px solid #333; padding: 6px; text-align: center; width: 40px;">NO</th>
+                                <th style="border: 1px solid #333; padding: 6px 12px; text-align: center;">NAMA</th>
+                                <th style="border: 1px solid #333; padding: 6px 12px; text-align: center; width: 140px;">TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                            <tr style="font-size: 11px; font-weight: bold;">
+                                <td colspan="2" style="border: 1px solid #333; padding: 8px 12px; text-align: right; text-transform: uppercase;">GRAND TOTAL</td>
+                                <td style="border: 1px solid #333; padding: 8px 12px; text-align: right;">${formatRupiah(totalAll)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    ${itemSummarySection}
+                </div>
+            `;
+
+            setTimeout(() => {
+                window.print();
+            }, 250);
+        }
+
+        function printIndividualEmployee(empId) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (!emp) return;
+
+            const printContainer = document.getElementById('printArea');
+            if (!printContainer) return;
+
+            const totalEmp = calculateEmployeeTotal(emp);
+
+            let daysDetailsHtml = '';
+
+            DAYS_LIST.forEach(day => {
+                const items = (emp.days && emp.days[day]) ? emp.days[day] : [];
+                if (items.length > 0) {
+                    const itemRows = items.map(item => `
+                        <tr>
+                            <td style="padding: 2px 0; font-size: 10px; uppercase; color: #444;">${escapeHtml(item.name)}</td>
+                            <td style="padding: 2px 0; text-align: center; font-size: 10px; color: #666; width: 60px;">${item.qty || 1}x</td>
+                            <td style="padding: 2px 0; text-align: right; font-size: 10px; color: #444; width: 90px;">${formatRupiah((item.qty || 1) * (item.price || 0))}</td>
+                        </tr>
+                    `).join('');
+
+                    daysDetailsHtml += `
+                        <div style="margin-bottom: 16px;">
+                            <div style="font-size: 10px; text-transform: uppercase; font-weight: bold; border-bottom: 1px solid #333; padding-bottom: 2px; margin-bottom: 4px; color: #111;">${day}</div>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tbody>
+                                    ${itemRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            });
+
+            printContainer.innerHTML = `
+                <div style="font-family: Arial, Helvetica, sans-serif; color: #222; max-width: 500px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 25px; line-height: 1.5; color: #555;">
+                        <div style="font-size: 11px; text-transform: uppercase;">RINCIAN EXTRA FOOD</div>
+                        <div style="font-size: 11px; text-transform: uppercase;">${escapeHtml(emp.name)}</div>
+                        <div style="font-size: 11px; text-transform: uppercase;">${escapeHtml(appState.period || '')}</div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        ${daysDetailsHtml || '<div style="font-size:10px; color:#888; text-align:center;">Tidak ada transaksi item.</div>'}
+                    </div>
+
+                    <div style="border-top: 1px solid #333; padding-top: 8px; text-align: right; font-size: 11px; font-weight: bold; uppercase; color: #222;">
+                        TOTAL: ${formatRupiah(totalEmp)}
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                window.print();
+            }, 250);
+        }
+
+        function formatRupiah(num) {
+            return 'Rp ' + (num || 0).toLocaleString('id-ID');
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+        }
+    </script>
+</body>
+</html>
