@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
@@ -232,9 +233,9 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2.5" stroke-linecap="round"></path></svg>
                         + Periode Baru
                     </button>
-                    <button onclick="saveCurrentToHistory()" title="Simpan / Timpa Snapshot Periode Saat Ini" class="flex-1 md:flex-initial px-4 py-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-black text-[10px] uppercase flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-                        Simpan Periode
+                    <button onclick="saveCurrentToHistory()" title="Sistem melakukan Simpan Otomatis (Autosave) setiap kali ada perubahan data" class="flex-1 md:flex-initial px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 font-black text-[10px] uppercase flex items-center justify-center gap-1.5 transition-all whitespace-nowrap shadow-sm">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                        Autosave Periode (Aktif)
                     </button>
                     <button onclick="openHistoryModal()" class="flex-1 md:flex-initial px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 font-black text-[10px] uppercase flex items-center justify-center gap-1.5 transition-all whitespace-nowrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -440,8 +441,36 @@
             return JSON.parse(JSON.stringify(DEFAULT_STATE));
         }
 
+        // --- AUTOSAVE PERIODE AUTOMATION ---
+        function autoSaveCurrentToHistory() {
+            if (!appState) return;
+            if (!appState.history) appState.history = [];
+
+            const currentPeriodTitle = (appState.period || "").trim().toUpperCase();
+            if (!currentPeriodTitle) return;
+
+            const existingIndex = appState.history.findIndex(h => (h.period || "").trim().toUpperCase() === currentPeriodTitle);
+
+            const snapshot = {
+                id: existingIndex >= 0 ? appState.history[existingIndex].id : 'hist_' + Date.now(),
+                period: appState.period,
+                month: appState.month,
+                savedAt: new Date().toLocaleString('id-ID'),
+                totalEmployees: appState.employees ? appState.employees.length : 0,
+                grandTotal: appState.employees ? appState.employees.reduce((acc, emp) => acc + calculateEmployeeTotal(emp), 0) : 0,
+                employees: JSON.parse(JSON.stringify(appState.employees || []))
+            };
+
+            if (existingIndex >= 0) {
+                appState.history[existingIndex] = snapshot;
+            } else {
+                appState.history.unshift(snapshot);
+            }
+        }
+
         function saveState() {
             try {
+                autoSaveCurrentToHistory();
                 localStorage.setItem('EXTRA_FOOD_STATE_V2', JSON.stringify(appState));
             } catch (e) {
                 console.error("Gagal menyimpan ke localStorage", e);
@@ -871,35 +900,10 @@
         }
 
         function saveCurrentToHistory() {
-            if (!appState.history) appState.history = [];
-
-            const currentPeriodTitle = (appState.period || "").trim().toUpperCase();
-            
-            // Cari apakah periode dengan nama yang sama sudah ada di history
-            const existingIndex = appState.history.findIndex(h => (h.period || "").trim().toUpperCase() === currentPeriodTitle);
-
-            const snapshot = {
-                id: existingIndex >= 0 ? appState.history[existingIndex].id : 'hist_' + Date.now(),
-                period: appState.period,
-                month: appState.month,
-                savedAt: new Date().toLocaleString('id-ID'),
-                totalEmployees: appState.employees.length,
-                grandTotal: appState.employees.reduce((acc, emp) => acc + calculateEmployeeTotal(emp), 0),
-                employees: JSON.parse(JSON.stringify(appState.employees))
-            };
-
-            if (existingIndex >= 0) {
-                // Timpa data periode yang sama
-                appState.history[existingIndex] = snapshot;
-                showToast(`Periode "${appState.period}" diperbarui/ditimpa!`);
-            } else {
-                // Tambah sebagai periode baru jika belum pernah disimpan
-                appState.history.unshift(snapshot);
-                showToast(`Periode "${appState.period}" berhasil disimpan ke History!`);
-            }
-
+            autoSaveCurrentToHistory();
             saveState();
             updateHistoryBadge();
+            showToast(`Periode "${appState.period}" tersimpan secara otomatis!`);
         }
 
         function openHistoryModal() {
