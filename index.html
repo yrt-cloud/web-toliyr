@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id" data-theme="light">
 <head>
@@ -884,17 +885,18 @@
             
             if (!newPeriodName || !newPeriodName.trim()) return;
 
-            const confirmClear = confirm(`Buat periode baru: "${newPeriodName.trim().toUpperCase()}"?\n\nSemua inputan item makanan harian akan dikosongkan. (Daftar nama pegawai, keterangan, dan limit budget tetap tersimpan).`);
+            const confirmClear = confirm(`Buat periode baru: "${newPeriodName.trim().toUpperCase()}"?\n\nSemua inputan item makanan harian dan kolom keterangan pegawai akan dikosongkan khusus untuk periode baru ini. (Daftar nama pegawai dan limit budget tetap tersimpan).`);
 
             if (confirmClear) {
-                // Reset daily items for all employees
+                // Reset daily items dan keterangan untuk semua pegawai di periode baru
                 appState.employees.forEach(emp => {
                     emp.days = { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] };
+                    emp.keterangan = "...............................................";
                 });
                 
                 appState.period = newPeriodName.trim().toUpperCase();
                 renderApp();
-                showToast(`Periode baru "${appState.period}" siap diisi (data kosong).`);
+                showToast(`Periode baru "${appState.period}" siap diisi (data & keterangan kosong).`);
             }
         }
 
