@@ -96,7 +96,7 @@
         }
         #printArea { display: none; }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: var(--barely-gray); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--teal-primary); border-radius: 10px; }
 
@@ -171,11 +171,95 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* --- COMPACT INLINE INFOGRAPHIC BAR CHART --- */
+        .infographic-track {
+            position: relative;
+            width: 48px;
+            height: 210px;
+            border-radius: 999px 999px 6px 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            transition: transform 0.25s ease;
+        }
+        .infographic-track:hover {
+            transform: translateY(-3px);
+        }
+        .infographic-fill {
+            position: relative;
+            width: 100%;
+            border-radius: 999px 999px 4px 4px;
+            transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            min-height: 58px;
+            overflow: visible;
+        }
+        .infographic-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.14);
+            border-radius: 0 999px 4px 0;
+            pointer-events: none;
+        }
+        /* Lingkaran Utama di Puncak Batang (Penggunaan) */
+        .infographic-badge-top {
+            position: absolute;
+            top: -13px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s ease;
+        }
+        .infographic-track:hover .infographic-badge-top {
+            transform: scale(1.08);
+        }
+        /* Lingkaran Kedua di Area Atas Capsule (Sisa Limit) */
+        .infographic-badge-sisa {
+            position: absolute;
+            top: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.94);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+            transition: transform 0.2s ease;
+        }
+        .infographic-track:hover .infographic-badge-sisa {
+            transform: scale(1.06);
+        }
+        .vertical-bar-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+            letter-spacing: 0.06em;
+            z-index: 10;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div id="app" class="max-w-[1400px] mx-auto no-print">
-        <!-- HEADER -->
+        <!-- HEADER (KEMBALI BERSIH SEPERTI SEMULA) -->
         <header class="mb-8 flex flex-col lg:flex-row justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 card-shadow gap-4">
             <div class="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-start">
                 <div class="flex items-center gap-4">
@@ -195,7 +279,7 @@
             </div>
             
             <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end items-center">
-                <button onclick="toggleTheme()" class="theme-toggle shadow-md">
+                <button onclick="toggleTheme()" class="theme-toggle shadow-md" title="Ganti Tema Terang/Gelap">
                     <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707m12.728 12.728L12 12m0 0l-4-4m4 4l4-4m-4 4l-4 4m4-4l4 4" stroke-width="2" stroke-linecap="round"></path><circle cx="12" cy="12" r="5" stroke-width="2"></circle></svg>
                     <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
                 </button>
@@ -218,7 +302,7 @@
         </header>
 
         <!-- DASHBOARD ATAS -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
             <div class="lg:col-span-3 bg-white p-6 rounded-[2rem] border border-slate-200 flex flex-col md:flex-row gap-6 card-shadow items-end">
                 <div class="flex-1 w-full">
                     <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-wider">Periode Aktif</label>
@@ -248,6 +332,42 @@
                 <p class="text-[10px] font-black opacity-80 uppercase tracking-[0.2em] mb-2">Total Seluruh Biaya</p>
                 <h2 id="grandTotalDisplay" class="text-3xl font-black tracking-tighter">Rp 0</h2>
                 <span id="totalEmployeeCount" class="text-[10px] opacity-75 font-semibold mt-1">0 PEGAWAI TERDAFTAR</span>
+            </div>
+        </div>
+
+        <!-- PANEL GRAFIK INFOGRAPHIC LANGSUNG DI BAWAH DASHBOARD ATAS -->
+        <div class="mb-6 bg-white p-5 md:p-6 rounded-[2rem] border border-slate-200 card-shadow">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="text-sky-500 font-black text-xs md:text-sm uppercase tracking-wider">BAR CHART</span>
+                    <span class="text-slate-700 font-bold text-xs md:text-sm uppercase tracking-wider">PENGGUNAAN & SISA LIMIT</span>
+                </div>
+
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="flex items-center gap-3 text-[10px] font-bold text-slate-500">
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-white border-2 border-sky-500 inline-block"></span>
+                            Lingkaran Atas: <strong class="text-sky-600">Sisa Limit</strong>
+                        </span>
+                        <span class="text-slate-300">•</span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-600 inline-block"></span>
+                            Lingkaran Batang: <strong class="text-teal-700">Penggunaan</strong>
+                        </span>
+                    </div>
+                    <button onclick="toggleChartCollapse()" id="toggleChartBtn" class="text-[10px] font-black uppercase px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all">
+                        Sembunyikan
+                    </button>
+                </div>
+            </div>
+
+            <div id="inlineChartBody" class="overflow-x-auto custom-scrollbar pb-1">
+                <div id="infographicChartContainer" class="min-w-max flex items-end justify-center gap-5 md:gap-7 px-4 pt-4 pb-1.5 border-b-2 border-slate-300 mx-auto">
+                    <!-- Dynamic Infographic Bars Render Here -->
+                </div>
+                <div id="infographicLabelsContainer" class="min-w-max flex items-start justify-center gap-5 md:gap-7 px-4 pt-2.5 mx-auto">
+                    <!-- Dynamic Bottom Labels Render Here -->
+                </div>
             </div>
         </div>
 
@@ -516,6 +636,129 @@
             }
         }
 
+        // --- INFOGRAPHIC BAR CHART MODAL & RENDERER ---
+        function openChartModal() {
+            renderInfographicChart();
+            document.getElementById('chartModal').classList.remove('hidden');
+        }
+
+        function closeChartModal() {
+            document.getElementById('chartModal').classList.add('hidden');
+        }
+
+        // --- INFOGRAPHIC BAR CHART INLINE RENDERER ---
+        function toggleChartCollapse() {
+            const body = document.getElementById('inlineChartBody');
+            const btn = document.getElementById('toggleChartBtn');
+            if (!body || !btn) return;
+
+            const isHidden = body.classList.toggle('hidden');
+            btn.textContent = isHidden ? 'Tampilkan' : 'Sembunyikan';
+        }
+
+        function formatCompactK(num) {
+            const abs = Math.abs(num);
+            const sign = num < 0 ? '-' : '';
+            if (abs >= 1000) {
+                const val = abs / 1000;
+                return sign + (Number.isInteger(val) ? val : val.toFixed(1).replace('.0', '')) + 'k';
+            }
+            return sign + abs;
+        }
+
+        function renderInfographicChart() {
+            const chartContainer = document.getElementById('infographicChartContainer');
+            const labelsContainer = document.getElementById('infographicLabelsContainer');
+
+            if (!chartContainer || !labelsContainer) return;
+
+            if (!appState.employees || appState.employees.length === 0) {
+                chartContainer.innerHTML = `<div class="py-10 text-center text-xs font-bold text-slate-400 uppercase">Belum ada data pegawai untuk ditampilkan.</div>`;
+                labelsContainer.innerHTML = '';
+                return;
+            }
+
+            // Palet warna capsule bersih & serasi dengan referensi gambar
+            const palette = [
+                { main: '#8ab8da', track: 'rgba(138, 184, 218, 0.16)', ring: '#7aa9ce', glow: 'rgba(138, 184, 218, 0.25)' },
+                { main: '#26c6da', track: 'rgba(38, 198, 218, 0.16)', ring: '#00acc1', glow: 'rgba(38, 198, 218, 0.25)' },
+                { main: '#29b6f6', track: 'rgba(41, 182, 246, 0.16)', ring: '#039be5', glow: 'rgba(41, 182, 246, 0.25)' },
+                { main: '#42a5f5', track: 'rgba(66, 165, 245, 0.16)', ring: '#1e88e5', glow: 'rgba(66, 165, 245, 0.25)' },
+                { main: '#8c9eff', track: 'rgba(140, 158, 255, 0.16)', ring: '#7986cb', glow: 'rgba(140, 158, 255, 0.25)' }
+            ];
+
+            const barsHtml = [];
+            const bottomLabelsHtml = [];
+
+            appState.employees.forEach((emp, idx) => {
+                const usage = calculateEmployeeTotal(emp);
+                const limit = emp.budgetLimit || 80000;
+                const remaining = limit - usage;
+
+                const rawRatio = limit > 0 ? (usage / limit) * 100 : 0;
+                const clampedHeightPct = Math.max(28, Math.min(rawRatio, 100));
+
+                const isOver = usage > limit;
+                const themeColor = isOver
+                    ? { main: '#f87171', track: 'rgba(248, 113, 113, 0.16)', ring: '#ef4444', glow: 'rgba(248, 113, 113, 0.25)' }
+                    : palette[idx % palette.length];
+
+                const shortName = (emp.name || 'PEGAWAI').split(' ')[0];
+                const usageLabel = formatCompactK(usage);
+                const sisaLabel = formatCompactK(remaining);
+                const isHighFill = clampedHeightPct > 70;
+
+                barsHtml.push(`
+                    <div class="flex flex-col items-center cursor-pointer" title="${escapeHtml(emp.name)} | Penggunaan: ${formatRupiah(usage)} | Sisa Limit: ${formatRupiah(remaining)}">
+                        <div class="infographic-track" style="background-color: ${themeColor.track};">
+                            
+                            <!-- LINGKARAN SISA LIMIT (Area Atas Capsule) -->
+                            ${!isHighFill ? `
+                                <div class="infographic-badge-sisa" style="border: 2.5px solid ${themeColor.ring}; box-shadow: 0 0 0 4px ${themeColor.glow};">
+                                    <span class="text-[6px] font-black uppercase leading-none text-slate-400">SISA</span>
+                                    <span class="text-[9px] font-black leading-tight" style="color: ${remaining < 0 ? '#ef4444' : themeColor.ring};">${sisaLabel}</span>
+                                </div>
+                            ` : ''}
+
+                            <!-- BATANG PENGGUNAAN -->
+                            <div class="infographic-fill" style="height: ${clampedHeightPct}%; background-color: ${themeColor.main};">
+                                
+                                <!-- LINGKARAN UTAMA PENGGUNAAN (Puncak Batang) -->
+                                <div class="infographic-badge-top" style="border: 3.5px solid ${themeColor.ring}; box-shadow: 0 0 0 5px ${themeColor.glow}, 0 3px 8px rgba(0,0,0,0.12);">
+                                    <span class="text-[6px] font-black uppercase leading-none text-slate-400">PAKAI</span>
+                                    <span class="text-[9.5px] font-black leading-tight" style="color: ${themeColor.ring};">${usageLabel}</span>
+                                </div>
+
+                                ${isHighFill ? `
+                                    <div class="w-8 h-8 rounded-full bg-white/95 flex flex-col items-center justify-center mb-1.5 z-20 shadow-sm" style="border: 2px solid ${themeColor.ring};">
+                                        <span class="text-[5.5px] font-black uppercase leading-none text-slate-400">SISA</span>
+                                        <span class="text-[8.5px] font-black leading-tight" style="color: ${remaining < 0 ? '#ef4444' : themeColor.ring};">${sisaLabel}</span>
+                                    </div>
+                                ` : ''}
+
+                                <!-- TEKS VERTIKAL DI DALAM BATANG -->
+                                <div class="pb-2.5 pt-7 flex items-center justify-center overflow-hidden max-h-[105px]">
+                                    <span class="vertical-bar-label text-[9px] font-black text-white uppercase">
+                                        ${escapeHtml(shortName)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                bottomLabelsHtml.push(`
+                    <div class="w-[54px] text-center flex flex-col items-center">
+                        <span class="text-[9.5px] font-black text-slate-800 uppercase leading-tight line-clamp-1">${escapeHtml(shortName)}</span>
+                        <span class="text-[8px] font-bold text-slate-400">${Math.round(rawRatio)}%</span>
+                    </div>
+                `);
+            });
+
+            chartContainer.innerHTML = barsHtml.join('');
+            labelsContainer.innerHTML = bottomLabelsHtml.join('');
+        }
+
         // --- RENDER FUNCTIONS ---
         function renderApp() {
             document.getElementById('periodInput').value = appState.period || "";
@@ -526,6 +769,8 @@
             renderMasterDatalist();
             updateGrandTotals();
             updateHistoryBadge();
+            renderInfographicChart();
+
             saveState();
         }
 
@@ -694,7 +939,7 @@
                 return;
             }
 
-            tbody.innerHTML = filtered.map((item, index) => `
+            tbody.innerHTML = filtered.map((item) => `
                 <tr class="border-b border-slate-50 hover:bg-slate-50/50">
                     <td class="py-2.5 pr-2 uppercase font-bold text-slate-700 text-[10px]">${escapeHtml(item.name)}</td>
                     <td class="py-2.5 text-right">
@@ -869,7 +1114,6 @@
                 const item = emp.days[day].find(i => i.id === itemId);
                 if (item) {
                     item.name = val.toUpperCase().trim();
-                    // Sync harga dengan master items jika cocok
                     const master = appState.masterItems.find(m => m.name.toUpperCase() === item.name);
                     if (master) {
                         item.price = master.price;
@@ -878,6 +1122,7 @@
                 }
             }
         }
+
         // --- HISTORY PERIODE MANAGEMENT ---
         function startNewPeriod() {
             const currentPeriod = appState.period || "PERIODE 01 - 05 SEPTEMBER 2025";
@@ -888,7 +1133,6 @@
             const confirmClear = confirm(`Buat periode baru: "${newPeriodName.trim().toUpperCase()}"?\n\nSemua inputan item makanan harian dan kolom keterangan pegawai akan dikosongkan khusus untuk periode baru ini. (Daftar nama pegawai dan limit budget tetap tersimpan).`);
 
             if (confirmClear) {
-                // Reset daily items dan keterangan untuk semua pegawai di periode baru
                 appState.employees.forEach(emp => {
                     emp.days = { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] };
                     emp.keterangan = "...............................................";
@@ -986,12 +1230,10 @@
 
             if (!raw) return newState;
 
-            // Handle metadata & history
             newState.period = raw.period || raw.periode || raw.periodeAktif || DEFAULT_STATE.period;
             newState.month = raw.month || raw.bulan || raw.bulanBerjalan || DEFAULT_STATE.month;
             newState.history = Array.isArray(raw.history) ? raw.history : [];
 
-            // Handle Master Items
             if (Array.isArray(raw.masterItems)) {
                 newState.masterItems = raw.masterItems.map(m => ({
                     name: (m.name || m.nama || "").toUpperCase(),
@@ -1004,13 +1246,11 @@
                 })).filter(m => m.name);
             }
 
-            // Helper lookup harga
             const getPrice = (menuName) => {
                 const found = newState.masterItems.find(m => m.name === menuName.toUpperCase());
                 return found ? found.price : 0;
             };
 
-            // Handle Employees (Dukung beragam struktur lama: `employees`, `pegawai`, `data`)
             const rawEmployees = raw.employees || raw.pegawai || raw.data || [];
             if (Array.isArray(rawEmployees) && rawEmployees.length > 0) {
                 newState.employees = rawEmployees.map((emp, index) => {
@@ -1019,11 +1259,9 @@
                     const empBudget = parseInt(emp.budgetLimit || emp.budget || emp.limit) || 80000;
                     
                     const normalizedDays = { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] };
-
                     const rawDays = emp.days || emp.hari || emp.jadwal || {};
 
                     DAYS_LIST.forEach(day => {
-                        // Cari kunci hari (kasus huruf besar/kecil)
                         const key = Object.keys(rawDays).find(k => k.toUpperCase() === day);
                         const dayItems = key ? rawDays[key] : [];
 
@@ -1115,7 +1353,6 @@
                 `;
             }).join('');
 
-            // --- AKUMULASI / KALKULASI BARANG KELUAR (LAMPIRAN 2) ---
             const itemMap = {};
             let totalQtyAll = 0;
             let totalItemNominalAll = 0;
