@@ -172,94 +172,31 @@
             opacity: 1;
         }
 
-        /* --- COMPACT INLINE INFOGRAPHIC BAR CHART --- */
-        .infographic-track {
+        /* --- GROUPED BAR CHART (GAYA GAMBAR REFERENSI: 2 BATANG PER ORANG) --- */
+        .grouped-bar {
+            width: 18px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s ease;
             position: relative;
-            width: 48px;
-            height: 210px;
-            border-radius: 999px 999px 6px 6px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            align-items: center;
-            transition: transform 0.25s ease;
+            min-height: 4px;
         }
-        .infographic-track:hover {
-            transform: translateY(-3px);
+        .grouped-bar-group:hover .grouped-bar {
+            filter: brightness(1.04);
         }
-        .infographic-fill {
-            position: relative;
-            width: 100%;
-            border-radius: 999px 999px 4px 4px;
-            transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            min-height: 58px;
-            overflow: visible;
-        }
-        .infographic-fill::after {
-            content: '';
+        .grouped-bar-value {
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.14);
-            border-radius: 0 999px 4px 0;
-            pointer-events: none;
-        }
-        /* Lingkaran Utama di Puncak Batang (Penggunaan) */
-        .infographic-badge-top {
-            position: absolute;
-            top: -13px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-            transition: transform 0.2s ease;
-        }
-        .infographic-track:hover .infographic-badge-top {
-            transform: scale(1.08);
-        }
-        /* Lingkaran Kedua di Area Atas Capsule (Sisa Limit) */
-        .infographic-badge-sisa {
-            position: absolute;
-            top: 6px;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.94);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 15;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
-            transition: transform 0.2s ease;
-        }
-        .infographic-track:hover .infographic-badge-sisa {
-            transform: scale(1.06);
-        }
-        .vertical-bar-label {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            font-weight: 800;
             white-space: nowrap;
-            letter-spacing: 0.06em;
-            z-index: 10;
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div id="app" class="max-w-[1400px] mx-auto no-print">
-        <!-- HEADER (KEMBALI BERSIH SEPERTI SEMULA) -->
+        <!-- HEADER -->
         <header class="mb-8 flex flex-col lg:flex-row justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 card-shadow gap-4">
             <div class="flex items-center gap-6 w-full lg:w-auto justify-between lg:justify-start">
                 <div class="flex items-center gap-4">
@@ -335,49 +272,74 @@
             </div>
         </div>
 
-        <!-- PANEL GRAFIK INFOGRAPHIC LANGSUNG DI BAWAH DASHBOARD ATAS -->
-        <div class="mb-6 bg-white p-5 md:p-6 rounded-[2rem] border border-slate-200 card-shadow">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <span class="text-sky-500 font-black text-xs md:text-sm uppercase tracking-wider">BAR CHART</span>
-                    <span class="text-slate-700 font-bold text-xs md:text-sm uppercase tracking-wider">PENGGUNAAN & SISA LIMIT</span>
-                </div>
-
-                <div class="flex items-center gap-3 flex-wrap">
-                    <div class="flex items-center gap-3 text-[10px] font-bold text-slate-500">
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-white border-2 border-sky-500 inline-block"></span>
-                            Lingkaran Atas: <strong class="text-sky-600">Sisa Limit</strong>
-                        </span>
-                        <span class="text-slate-300">•</span>
-                        <span class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-white border-2 border-teal-600 inline-block"></span>
-                            Lingkaran Batang: <strong class="text-teal-700">Penggunaan</strong>
-                        </span>
-                    </div>
-                    <button onclick="toggleChartCollapse()" id="toggleChartBtn" class="text-[10px] font-black uppercase px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all">
-                        Sembunyikan
-                    </button>
-                </div>
+        <!-- PANEL GRAFIK GROUPED BAR CHART (2 BATANG PER PEGAWAI: TERPAKAI & SISA LIMIT) -->
+        <div class="mb-6 bg-white p-6 md:p-8 rounded-[2rem] border border-slate-200 card-shadow relative overflow-hidden">
+            <div class="flex justify-end mb-1">
+                <button onclick="toggleChartCollapse()" id="toggleChartBtn" class="text-[10px] font-black uppercase px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all">
+                    Sembunyikan
+                </button>
             </div>
 
-            <div id="inlineChartBody" class="overflow-x-auto custom-scrollbar pb-1">
-                <div id="infographicChartContainer" class="min-w-max flex items-end justify-center gap-5 md:gap-7 px-4 pt-4 pb-1.5 border-b-2 border-slate-300 mx-auto">
-                    <!-- Dynamic Infographic Bars Render Here -->
+            <div id="inlineChartBody">
+                <!-- Judul Gaya Gambar Contoh -->
+                <div class="text-center mb-5">
+                    <p class="text-[11px] md:text-xs font-extrabold tracking-[0.22em] text-slate-500 uppercase">LAPORAN PENGGUNAAN BUDGET</p>
+                    <h3 class="text-xl md:text-2xl font-black tracking-wide uppercase mt-0.5" style="color: #5b89c4;">SUDAH TERPAKAI &amp; SISA LIMIT</h3>
                 </div>
-                <div id="infographicLabelsContainer" class="min-w-max flex items-start justify-center gap-5 md:gap-7 px-4 pt-2.5 mx-auto">
-                    <!-- Dynamic Bottom Labels Render Here -->
+
+                <!-- Legenda Atas (Kotak Rounded Seperti Gambar 1) -->
+                <div class="flex items-center justify-center gap-6 md:gap-8 mb-6 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-4 h-4 rounded-[4px] inline-block shadow-xs" style="background-color: #f88b8b;"></span>
+                        <span class="text-xs font-bold text-slate-600">Sudah Terpakai</span>
+                    </div>
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-4 h-4 rounded-[4px] inline-block shadow-xs" style="background-color: #fdd482;"></span>
+                        <span class="text-xs font-bold text-slate-600">Sisa Limit</span>
+                    </div>
+                </div>
+
+                <!-- Area Grafik dengan Sumbu Y & Garis Grid Horizontal -->
+                <div class="max-w-5xl mx-auto">
+                    <div class="flex items-stretch">
+                        <!-- Sumbu Y (Label Nominal) -->
+                        <div id="groupedYAxis" class="flex flex-col justify-between items-end pr-3 text-[11px] font-bold text-slate-500 select-none pb-[34px] pt-4" style="height: 254px;">
+                            <!-- Dynamic Y-Axis Ticks -->
+                        </div>
+
+                        <!-- Area Batang + Garis Grid -->
+                        <div class="flex-1 overflow-x-auto custom-scrollbar">
+                            <div id="groupedChartCanvas" class="relative min-w-max">
+                                <!-- Dynamic Grid & Grouped Bars Render Here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legenda Bawah (Lingkaran Seperti Gambar 1) -->
+                    <div class="flex items-center justify-center gap-6 md:gap-10 mt-5 pt-4 border-t border-slate-100 flex-wrap">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-4 h-4 rounded-full inline-block" style="background-color: #f88b8b;"></span>
+                            <span class="text-[11px] font-bold text-slate-600">Penggunaan Extra Food</span>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-4 h-4 rounded-full inline-block" style="background-color: #fdd482;"></span>
+                            <span class="text-[11px] font-bold text-slate-600">Sisa Saldo Limit</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- SEARCH BAR -->
-        <div class="mb-6 p-1.5 rounded-2xl flex items-center gap-4 shadow-inner" style="background-color: var(--amber-accent);">
+        <div class="mb-6 p-1.5 rounded-2xl flex items-center gap-3 shadow-inner" style="background-color: var(--amber-accent);">
             <div class="bg-white/20 p-3 rounded-xl ml-2">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="3" stroke-linecap="round"></path></svg>
             </div>
-            <input type="text" id="searchEmployee" oninput="renderEmployees()" placeholder="CARI NAMA ATAL KETERANGAN PEGAWAI..." class="w-full bg-transparent font-black text-xs uppercase tracking-widest outline-none text-white placeholder-white/70">
-            <div class="text-[9px] font-black text-white/80 uppercase px-4 whitespace-nowrap">Filter Database</div>
+            <input type="text" id="searchEmployee" oninput="renderEmployees()" placeholder="CARI NAMA ATAU KETERANGAN PEGAWAI..." class="w-full bg-transparent font-black text-xs uppercase tracking-widest outline-none text-white placeholder-white/70">
+            <button onclick="toggleAllCompactMode()" id="globalCompactBtn" class="bg-white/20 hover:bg-white/30 text-white px-3.5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all whitespace-nowrap mr-1.5 flex items-center gap-1.5" title="Lipat atau buka semua kartu pegawai">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-width="2.5" stroke-linecap="round"></path></svg>
+                <span>Mode Ringkas</span>
+            </button>
         </div>
 
         <!-- DAFTAR KARTU PEGAWAI -->
@@ -451,6 +413,10 @@
                     <input type="text" id="newEmpKet" placeholder="CATATAN / POSISI..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-teal-600">
                 </div>
                 <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">No. WhatsApp (Opsional)</label>
+                    <input type="tel" id="newEmpWa" placeholder="CONTOH: 08123456789" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-teal-600">
+                </div>
+                <div>
                     <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Limit Budget (Rp)</label>
                     <input type="number" id="newEmpBudget" value="80000" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-teal-600">
                 </div>
@@ -510,6 +476,7 @@
                     id: "emp_default_1",
                     name: "DADAN TARYANTO",
                     keterangan: "...............................................",
+                    whatsapp: "",
                     budgetLimit: 80000,
                     days: {
                         SENIN: [
@@ -541,6 +508,8 @@
 
         const DAYS_LIST = ["SENIN", "SELASA", "RABU", "KAMIS", "JUMAT"];
         let appState = loadLocalStorageData();
+        let collapsedEmployees = new Set();
+        let isAllCollapsed = false;
 
         // --- APP INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -636,17 +605,7 @@
             }
         }
 
-        // --- INFOGRAPHIC BAR CHART MODAL & RENDERER ---
-        function openChartModal() {
-            renderInfographicChart();
-            document.getElementById('chartModal').classList.remove('hidden');
-        }
-
-        function closeChartModal() {
-            document.getElementById('chartModal').classList.add('hidden');
-        }
-
-        // --- INFOGRAPHIC BAR CHART INLINE RENDERER ---
+        // --- GROUPED BAR CHART RENDERER (2 BATANG PER PEGAWAI: TERPAKAI & SISA LIMIT) ---
         function toggleChartCollapse() {
             const body = document.getElementById('inlineChartBody');
             const btn = document.getElementById('toggleChartBtn');
@@ -667,96 +626,101 @@
         }
 
         function renderInfographicChart() {
-            const chartContainer = document.getElementById('infographicChartContainer');
-            const labelsContainer = document.getElementById('infographicLabelsContainer');
+            const yAxisContainer = document.getElementById('groupedYAxis');
+            const chartCanvas = document.getElementById('groupedChartCanvas');
 
-            if (!chartContainer || !labelsContainer) return;
+            if (!yAxisContainer || !chartCanvas) return;
 
             if (!appState.employees || appState.employees.length === 0) {
-                chartContainer.innerHTML = `<div class="py-10 text-center text-xs font-bold text-slate-400 uppercase">Belum ada data pegawai untuk ditampilkan.</div>`;
-                labelsContainer.innerHTML = '';
+                yAxisContainer.innerHTML = '';
+                chartCanvas.innerHTML = `<div class="py-12 text-center text-xs font-bold text-slate-400 uppercase">Belum ada data pegawai untuk ditampilkan.</div>`;
                 return;
             }
 
-            // Palet warna capsule bersih & serasi dengan referensi gambar
-            const palette = [
-                { main: '#8ab8da', track: 'rgba(138, 184, 218, 0.16)', ring: '#7aa9ce', glow: 'rgba(138, 184, 218, 0.25)' },
-                { main: '#26c6da', track: 'rgba(38, 198, 218, 0.16)', ring: '#00acc1', glow: 'rgba(38, 198, 218, 0.25)' },
-                { main: '#29b6f6', track: 'rgba(41, 182, 246, 0.16)', ring: '#039be5', glow: 'rgba(41, 182, 246, 0.25)' },
-                { main: '#42a5f5', track: 'rgba(66, 165, 245, 0.16)', ring: '#1e88e5', glow: 'rgba(66, 165, 245, 0.25)' },
-                { main: '#8c9eff', track: 'rgba(140, 158, 255, 0.16)', ring: '#7986cb', glow: 'rgba(140, 158, 255, 0.25)' }
-            ];
-
-            const barsHtml = [];
-            const bottomLabelsHtml = [];
-
-            appState.employees.forEach((emp, idx) => {
+            // Hitung nilai maksimum untuk skala Sumbu Y yang proporsional (4 interval seperti 0, 20k, 40k, 60k, 80k)
+            let maxVal = 80000;
+            appState.employees.forEach(emp => {
                 const usage = calculateEmployeeTotal(emp);
                 const limit = emp.budgetLimit || 80000;
-                const remaining = limit - usage;
-
-                const rawRatio = limit > 0 ? (usage / limit) * 100 : 0;
-                const clampedHeightPct = Math.max(28, Math.min(rawRatio, 100));
-
-                const isOver = usage > limit;
-                const themeColor = isOver
-                    ? { main: '#f87171', track: 'rgba(248, 113, 113, 0.16)', ring: '#ef4444', glow: 'rgba(248, 113, 113, 0.25)' }
-                    : palette[idx % palette.length];
-
-                const shortName = (emp.name || 'PEGAWAI').split(' ')[0];
-                const usageLabel = formatCompactK(usage);
-                const sisaLabel = formatCompactK(remaining);
-                const isHighFill = clampedHeightPct > 70;
-
-                barsHtml.push(`
-                    <div class="flex flex-col items-center cursor-pointer" title="${escapeHtml(emp.name)} | Penggunaan: ${formatRupiah(usage)} | Sisa Limit: ${formatRupiah(remaining)}">
-                        <div class="infographic-track" style="background-color: ${themeColor.track};">
-                            
-                            <!-- LINGKARAN SISA LIMIT (Area Atas Capsule) -->
-                            ${!isHighFill ? `
-                                <div class="infographic-badge-sisa" style="border: 2.5px solid ${themeColor.ring}; box-shadow: 0 0 0 4px ${themeColor.glow};">
-                                    <span class="text-[6px] font-black uppercase leading-none text-slate-400">SISA</span>
-                                    <span class="text-[9px] font-black leading-tight" style="color: ${remaining < 0 ? '#ef4444' : themeColor.ring};">${sisaLabel}</span>
-                                </div>
-                            ` : ''}
-
-                            <!-- BATANG PENGGUNAAN -->
-                            <div class="infographic-fill" style="height: ${clampedHeightPct}%; background-color: ${themeColor.main};">
-                                
-                                <!-- LINGKARAN UTAMA PENGGUNAAN (Puncak Batang) -->
-                                <div class="infographic-badge-top" style="border: 3.5px solid ${themeColor.ring}; box-shadow: 0 0 0 5px ${themeColor.glow}, 0 3px 8px rgba(0,0,0,0.12);">
-                                    <span class="text-[6px] font-black uppercase leading-none text-slate-400">PAKAI</span>
-                                    <span class="text-[9.5px] font-black leading-tight" style="color: ${themeColor.ring};">${usageLabel}</span>
-                                </div>
-
-                                ${isHighFill ? `
-                                    <div class="w-8 h-8 rounded-full bg-white/95 flex flex-col items-center justify-center mb-1.5 z-20 shadow-sm" style="border: 2px solid ${themeColor.ring};">
-                                        <span class="text-[5.5px] font-black uppercase leading-none text-slate-400">SISA</span>
-                                        <span class="text-[8.5px] font-black leading-tight" style="color: ${remaining < 0 ? '#ef4444' : themeColor.ring};">${sisaLabel}</span>
-                                    </div>
-                                ` : ''}
-
-                                <!-- TEKS VERTIKAL DI DALAM BATANG -->
-                                <div class="pb-2.5 pt-7 flex items-center justify-center overflow-hidden max-h-[105px]">
-                                    <span class="vertical-bar-label text-[9px] font-black text-white uppercase">
-                                        ${escapeHtml(shortName)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `);
-
-                bottomLabelsHtml.push(`
-                    <div class="w-[54px] text-center flex flex-col items-center">
-                        <span class="text-[9.5px] font-black text-slate-800 uppercase leading-tight line-clamp-1">${escapeHtml(shortName)}</span>
-                        <span class="text-[8px] font-bold text-slate-400">${Math.round(rawRatio)}%</span>
-                    </div>
-                `);
+                const remaining = Math.max(0, limit - usage);
+                maxVal = Math.max(maxVal, usage, limit, remaining);
             });
 
-            chartContainer.innerHTML = barsHtml.join('');
-            labelsContainer.innerHTML = bottomLabelsHtml.join('');
+            // Bulatkan kelipatan 20.000 agar sumbu Y rapi
+            const stepCount = 4;
+            const rawStep = maxVal / stepCount;
+            const step = Math.ceil(rawStep / 5000) * 5000;
+            const niceMax = step * stepCount;
+
+            // Render Label Sumbu Y (dari atas ke bawah)
+            const yTicks = [];
+            for (let i = stepCount; i >= 0; i--) {
+                const val = i * step;
+                yTicks.push(`<span>${val === 0 ? '0' : formatCompactK(val)}</span>`);
+            }
+            yAxisContainer.innerHTML = yTicks.join('');
+
+            const chartHeight = 200; // Tinggi area batang dalam px
+
+            // Garis Grid Horizontal (4 garis atas + garis dasar 0)
+            const gridLinesHtml = `
+                <div class="absolute inset-x-0 top-4 flex flex-col justify-between pointer-events-none" style="height: ${chartHeight}px;">
+                    <div class="border-b border-slate-200/80 w-full"></div>
+                    <div class="border-b border-slate-200/80 w-full"></div>
+                    <div class="border-b border-slate-200/80 w-full"></div>
+                    <div class="border-b border-slate-200/80 w-full"></div>
+                    <div class="border-b-2 border-slate-300 w-full"></div>
+                </div>
+            `;
+
+            // Render Kelompok 2 Batang untuk Setiap Pegawai
+            const groupsHtml = appState.employees.map(emp => {
+                const usage = calculateEmployeeTotal(emp);
+                const limit = emp.budgetLimit || 80000;
+                const remainingRaw = limit - usage;
+                const remainingDisplay = Math.max(0, remainingRaw);
+
+                const usageHeightPx = Math.min(chartHeight, Math.round((usage / niceMax) * chartHeight));
+                const sisaHeightPx = Math.min(chartHeight, Math.round((remainingDisplay / niceMax) * chartHeight));
+
+                const isOver = usage > limit;
+                const usageBarColor = isOver ? '#ef4444' : '#f88b8b'; // Coral Pink lembut seperti Seri 1
+                const sisaBarColor = '#fdd482';                        // Kuning Pastel lembut seperti Seri 2
+
+                const shortName = (emp.name || 'PEGAWAI').split(' ')[0];
+                const usageText = formatCompactK(usage);
+                const sisaText = formatCompactK(remainingRaw);
+
+                return `
+                    <div class="grouped-bar-group flex flex-col items-center cursor-pointer" title="${escapeHtml(emp.name)} | Terpakai: ${formatRupiah(usage)} | Sisa Limit: ${formatRupiah(remainingRaw)}">
+                        <!-- Area 2 Batang Berdampingan -->
+                        <div class="flex items-end justify-center gap-1 px-0.5" style="height: ${chartHeight}px;">
+                            <!-- Batang 1: Sudah Terpakai -->
+                            <div class="grouped-bar" style="height: ${Math.max(4, usageHeightPx)}px; background-color: ${usageBarColor};">
+                                <span class="grouped-bar-value" style="color: ${isOver ? '#dc2626' : '#e05a5a'};">${usageText}</span>
+                            </div>
+                            <!-- Batang 2: Sisa Limit -->
+                            <div class="grouped-bar" style="height: ${Math.max(4, sisaHeightPx)}px; background-color: ${sisaBarColor};">
+                                <span class="grouped-bar-value" style="color: ${remainingRaw < 0 ? '#dc2626' : '#c78a14'};">${sisaText}</span>
+                            </div>
+                        </div>
+
+                        <!-- Label Nama Pegawai di Bawah Garis 0 -->
+                        <div class="pt-2 text-center w-[54px]">
+                            <span class="text-[10px] font-bold text-slate-700 capitalize block truncate" title="${escapeHtml(emp.name)}">
+                                ${escapeHtml(shortName.toLowerCase())}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            chartCanvas.innerHTML = `
+                ${gridLinesHtml}
+                <div class="relative z-10 flex items-end justify-around gap-2 md:gap-3 px-2 pt-4">
+                    ${groupsHtml}
+                </div>
+            `;
         }
 
         // --- RENDER FUNCTIONS ---
@@ -840,13 +804,14 @@
                 const percentage = Math.min(Math.round((totalUsage / limit) * 100), 100);
                 const barColor = totalUsage > limit ? '#ef4444' : (percentage >= 90 ? '#f59e0b' : '#005E6A');
                 const initial = emp.name ? emp.name.charAt(0).toUpperCase() : '?';
+                const isCollapsed = collapsedEmployees.has(emp.id);
 
                 return `
-                <div class="rounded-[2.5rem] border border-slate-200 p-6 md:p-8 bg-white card-shadow relative">
-                    <div class="flex flex-col md:flex-row justify-between items-start mb-8 gap-6">
+                <div class="rounded-[2.5rem] border border-slate-200 ${isCollapsed ? 'p-5 md:p-6' : 'p-6 md:p-8'} bg-white card-shadow relative transition-all">
+                    <div class="flex flex-col md:flex-row justify-between items-start ${isCollapsed ? 'mb-0' : 'mb-8'} gap-6">
                         <div class="flex-1 w-full">
                             <div class="flex items-center justify-between md:justify-start gap-4">
-                                <h3 class="font-black text-xl md:text-2xl uppercase text-slate-900 tracking-tight flex items-center gap-3">
+                                <h3 class="font-black text-xl md:text-2xl uppercase text-slate-900 tracking-tight flex items-center gap-3 flex-1">
                                     <span class="profile-img">${initial}</span>
                                     <input type="text" value="${escapeHtml(emp.name)}" onchange="updateEmployeeName('${emp.id}', this.value)" class="bg-transparent font-black outline-none border-b border-transparent focus:border-teal-500 hover:border-slate-300 transition-all uppercase w-full">
                                 </h3>
@@ -855,16 +820,33 @@
                                 </button>
                             </div>
 
-                            <!-- FITUR KETERANGAN PADA NAMA PEGAWAI -->
-                            <div class="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 max-w-xl">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider whitespace-nowrap">Keterangan:</label>
-                                <input type="text" value="${escapeHtml(emp.keterangan || '')}" placeholder="Isi keterangan di sini..." onchange="updateEmployeeKet('${emp.id}', this.value)" class="keterangan-input w-full uppercase" />
+                            <!-- FITUR KETERANGAN & NO WHATSAPP PADA NAMA PEGAWAI -->
+                            <div class="mt-3 flex flex-col sm:flex-row sm:items-center gap-2 max-w-2xl ${isCollapsed ? 'hidden' : ''}">
+                                <div class="flex items-center gap-2 flex-1">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider whitespace-nowrap">Keterangan:</label>
+                                    <input type="text" value="${escapeHtml(emp.keterangan || '')}" placeholder="Isi keterangan di sini..." onchange="updateEmployeeKet('${emp.id}', this.value)" class="keterangan-input w-full uppercase" />
+                                </div>
+                                <div class="flex items-center gap-2 sm:w-52">
+                                    <label class="text-[10px] font-black text-emerald-600 uppercase tracking-wider whitespace-nowrap">No. WA:</label>
+                                    <input type="tel" value="${escapeHtml(emp.whatsapp || '')}" placeholder="0812xxxx..." onchange="updateEmployeeWa('${emp.id}', this.value)" class="keterangan-input w-full font-mono" />
+                                </div>
                             </div>
 
-                            <div class="mt-3">
-                                <button onclick="printIndividualEmployee('${emp.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-1.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-2 border border-slate-200 transition-all shadow-sm no-print">
+                            <!-- TOMBOL AKSI: RINCIAN, WHATSAPP & LIPAT/BUKA DETAIL -->
+                            <div class="mt-3 flex flex-wrap items-center gap-2 no-print">
+                                <button onclick="printIndividualEmployee('${emp.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-1.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-1.5 border border-slate-200 transition-all shadow-sm">
                                     <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-width="2"></path></svg>
                                     Rincian Pegawai
+                                </button>
+
+                                <button onclick="shareEmployeeWhatsApp('${emp.id}')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3.5 py-1.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-1.5 border border-emerald-200 transition-all shadow-sm" title="Salin & Kirim Rincian Limit ke WhatsApp">
+                                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.758.459 3.473 1.331 4.986L2 22l5.182-1.359a9.93 9.93 0 004.849 1.26h.004c5.515 0 9.969-4.454 9.969-9.969 0-2.663-1.037-5.167-2.92-7.05A9.903 9.903 0 0012.031 2zm5.822 14.274c-.246.693-1.432 1.326-1.984 1.409-.506.076-1.147.108-1.851-.116-.427-.135-.975-.316-1.677-.619-2.952-1.274-4.88-4.248-5.028-4.445-.147-.197-1.2-1.596-1.2-3.045 0-1.449.76-2.161 1.03-2.456.27-.295.589-.369.786-.369.196 0 .393.002.565.01.181.009.424-.069.663.506.246.59.835 2.038.909 2.186.074.148.123.32.025.517-.098.197-.148.32-.295.492-.147.172-.31.384-.442.516-.147.147-.301.307-.129.602.172.295.764 1.26 1.64 2.041 1.127 1.005 2.077 1.317 2.372 1.464.295.148.467.123.639-.074.172-.197.737-.86.934-1.155.197-.295.393-.246.664-.148.27.099 1.719.811 2.014.959.295.147.492.221.565.344.074.123.074.713-.172 1.406z"/></svg>
+                                    Info WA
+                                </button>
+
+                                <button onclick="toggleEmployeeCollapse('${emp.id}')" class="bg-sky-50 hover:bg-sky-100 text-sky-700 px-3.5 py-1.5 rounded-xl font-black text-[10px] uppercase flex items-center gap-1.5 border border-sky-200 transition-all shadow-sm">
+                                    <svg class="w-3.5 h-3.5 transition-transform ${isCollapsed ? '' : 'rotate-180'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                    ${isCollapsed ? 'Buka Menu' : 'Lipat'}
                                 </button>
                             </div>
                         </div>
@@ -893,7 +875,7 @@
                     </div>
 
                     <!-- HARI (SENIN - JUMAT) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div class="${isCollapsed ? 'hidden' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4'}">
                         ${DAYS_LIST.map(day => renderDayColumn(emp, day)).join('')}
                     </div>
                 </div>
@@ -966,6 +948,7 @@
             e.preventDefault();
             const name = document.getElementById('newEmpName').value.trim();
             const ket = document.getElementById('newEmpKet').value.trim() || "...............................................";
+            const wa = document.getElementById('newEmpWa').value.trim();
             const budget = parseInt(document.getElementById('newEmpBudget').value) || 80000;
 
             if (!name) return;
@@ -974,6 +957,7 @@
                 id: 'emp_' + Date.now(),
                 name: name.toUpperCase(),
                 keterangan: ket,
+                whatsapp: wa,
                 budgetLimit: budget,
                 days: { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] }
             };
@@ -982,6 +966,7 @@
             closeAddEmployeeModal();
             document.getElementById('newEmpName').value = '';
             document.getElementById('newEmpKet').value = '';
+            document.getElementById('newEmpWa').value = '';
             
             renderApp();
             showToast(`Pegawai ${name} berhasil ditambahkan!`);
@@ -1001,6 +986,26 @@
                 emp.keterangan = val;
                 saveState();
             }
+        }
+
+        function updateEmployeeWa(empId, val) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (emp) {
+                emp.whatsapp = val.trim();
+                saveState();
+                showToast(`Nomor WA ${emp.name} tersimpan`);
+            }
+        }
+
+        function formatPhoneForWa(rawPhone) {
+            if (!rawPhone) return '';
+            let digits = rawPhone.replace(/\D/g, '');
+            if (digits.startsWith('0')) {
+                digits = '62' + digits.slice(1);
+            } else if (digits.startsWith('8')) {
+                digits = '62' + digits;
+            }
+            return digits;
         }
 
         function updateItemQty(empId, day, itemId, val) {
@@ -1085,9 +1090,99 @@
             const emp = appState.employees.find(e => e.id === empId);
             if (emp && confirm(`Apakah Anda yakin ingin menghapus pegawai ${emp.name}?`)) {
                 appState.employees = appState.employees.filter(e => e.id !== empId);
+                collapsedEmployees.delete(empId);
                 renderApp();
                 showToast("Pegawai berhasil dihapus");
             }
+        }
+
+        // --- FITUR POIN 3: WHATSAPP SHARE RINGKASAN ---
+        function shareEmployeeWhatsApp(empId) {
+            const emp = appState.employees.find(e => e.id === empId);
+            if (!emp) return;
+
+            const totalUsage = calculateEmployeeTotal(emp);
+            const limit = emp.budgetLimit || 80000;
+            const remaining = limit - totalUsage;
+
+            let detailLines = [];
+            DAYS_LIST.forEach(day => {
+                const items = (emp.days && emp.days[day]) ? emp.days[day].filter(i => (i.name || '').trim()) : [];
+                if (items.length > 0) {
+                    const itemLines = items.map(i => {
+                        const qty = i.qty || 1;
+                        const price = i.price || 0;
+                        const subtotal = qty * price;
+                        return `  - ${i.name} (${qty} x ${formatRupiah(price)} = ${formatRupiah(subtotal)})`;
+                    }).join('\n');
+                    detailLines.push(`• *${day}:*\n${itemLines}`);
+                }
+            });
+
+            const rincianText = detailLines.length > 0 ? `\n\n*Rincian:*\n${detailLines.join('\n')}` : '';
+            const statusLimit = remaining < 0
+                ? `Melebihi Limit: *${formatRupiah(Math.abs(remaining))}*`
+                : `Sisa Limit: *${formatRupiah(remaining)}*`;
+
+            const message = `*INFO EXTRA FOOD - COC CASH*\n` +
+                `${appState.period || ''}\n\n` +
+                `Nama: *${emp.name}*\n` +
+                `Budget Limit: ${formatRupiah(limit)}\n` +
+                `Sudah Terpakai: *${formatRupiah(totalUsage)}*\n` +
+                `${statusLimit}` +
+                `${rincianText}`;
+
+            // Salin otomatis ke clipboard terlebih dahulu
+            const tempArea = document.createElement('textarea');
+            tempArea.value = message;
+            document.body.appendChild(tempArea);
+            tempArea.select();
+            try {
+                document.execCommand('copy');
+            } catch (e) {}
+            document.body.removeChild(tempArea);
+
+            // Format nomor tujuan jika sudah diisi pada kartu pegawai
+            const targetPhone = formatPhoneForWa(emp.whatsapp);
+            const waUrl = targetPhone
+                ? `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`
+                : `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+            showToast(targetPhone
+                ? `Membuka chat WA langsung ke ${emp.whatsapp}...`
+                : `Pesan disalin! Isi kolom No. WA agar langsung ke nomor tujuan.`);
+
+            window.open(waUrl, '_blank');
+        }
+
+        // --- FITUR POIN 4: MODE RINGKAS (ACCORDION) ---
+        function toggleEmployeeCollapse(empId) {
+            if (collapsedEmployees.has(empId)) {
+                collapsedEmployees.delete(empId);
+            } else {
+                collapsedEmployees.add(empId);
+            }
+            updateGlobalCompactButton();
+            renderEmployees();
+        }
+
+        function toggleAllCompactMode() {
+            isAllCollapsed = !isAllCollapsed;
+            if (isAllCollapsed) {
+                appState.employees.forEach(emp => collapsedEmployees.add(emp.id));
+            } else {
+                collapsedEmployees.clear();
+            }
+            updateGlobalCompactButton();
+            renderEmployees();
+        }
+
+        function updateGlobalCompactButton() {
+            const btn = document.getElementById('globalCompactBtn');
+            if (!btn) return;
+            const allAreCollapsed = appState.employees.length > 0 && appState.employees.every(e => collapsedEmployees.has(e.id));
+            isAllCollapsed = allAreCollapsed;
+            btn.querySelector('span').textContent = isAllCollapsed ? 'Buka Semua' : 'Mode Ringkas';
         }
 
         // --- ITEM ACTIONS ---
@@ -1256,6 +1351,7 @@
                 newState.employees = rawEmployees.map((emp, index) => {
                     const empName = (emp.name || emp.nama || emp.namaPegawai || `PEGAWAI ${index + 1}`).toUpperCase();
                     const empKet = emp.keterangan || emp.ket || emp.note || emp.catatan || "...............................................";
+                    const empWa = emp.whatsapp || emp.wa || emp.noWa || emp.phone || "";
                     const empBudget = parseInt(emp.budgetLimit || emp.budget || emp.limit) || 80000;
                     
                     const normalizedDays = { SENIN: [], SELASA: [], RABU: [], KAMIS: [], JUMAT: [] };
@@ -1286,6 +1382,7 @@
                         id: emp.id || `emp_${Date.now()}_${index}`,
                         name: empName,
                         keterangan: empKet,
+                        whatsapp: empWa,
                         budgetLimit: empBudget,
                         days: normalizedDays
                     };
